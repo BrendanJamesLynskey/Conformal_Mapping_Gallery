@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conformal Mapping Gallery</title>
+<style>
+:root {
+  --bg: #0f0f13;
+  --surface: #1a1a24;
+  --border: #2a2a3a;
+  --text: #e0e0e8;
+  --muted: #8888a0;
+  --accent: #6c8cff;
+  --accent2: #ff6c8c;
+  --accent3: #6cffc8;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+header p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.controls {
+  max-width: 1400px;
+  margin: 12px auto;
+  padding: 0 16px;
+}
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.pill:hover { border-color: var(--accent); color: var(--text); }
+.pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+.option-group label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.option-group input[type="range"] {
+  width: 90px;
+  accent-color: var(--accent);
+}
+.option-group input[type="number"],
+.option-group input[type="text"] {
+  width: 52px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 3px 5px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  text-align: center;
+}
+.option-group input[type="number"]:focus,
+.option-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.btn-icon {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-icon:hover { border-color: var(--accent); color: var(--text); }
+.btn-icon.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.canvas-row {
+  display: flex;
+  gap: 12px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px 16px;
+  justify-content: center;
+}
+.canvas-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  flex: 1;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+}
+.canvas-card .card-header {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.canvas-card .card-header span.fn {
+  color: var(--accent);
+  font-weight: 600;
+}
+.canvas-card canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  background: var(--bg);
+}
+.info-bar {
+  max-width: 1400px;
+  margin: 0 auto 16px;
+  padding: 0 16px;
+}
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.info-card strong { color: var(--text); }
+.info-card .fp { color: var(--accent3); }
+.mobius-fields {
+  display: none;
+  gap: 6px;
+  align-items: center;
+}
+.mobius-fields.show { display: flex; }
+.mobius-fields label { font-size: 0.75rem; color: var(--muted); }
+.mobius-fields input {
+  width: 40px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 3px 4px;
+  font-size: 0.75rem;
+  text-align: center;
+  font-family: inherit;
+}
+.mobius-fields input:focus { outline: none; border-color: var(--accent); }
+@media (max-width: 800px) {
+  .canvas-row { flex-direction: column; align-items: center; }
+  .canvas-card { max-width: 95vw; }
+  header h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Conformal Mapping Gallery</h1>
+  <p>Explore how complex functions warp grids and circles while preserving angles</p>
+</header>
+
+<div class="controls">
+  <div class="pill-row" id="mappingPills"></div>
+  <div class="options-row">
+    <div class="option-group">
+      <label>View:</label>
+      <button class="pill active" id="btnGrid" onclick="setViewMode('grid')">Grid</button>
+      <button class="pill" id="btnDomain" onclick="setViewMode('domain')">Domain Color</button>
+    </div>
+    <div class="option-group">
+      <label>Density:</label>
+      <input type="range" id="densitySlider" min="5" max="40" value="15" oninput="onDensityChange()">
+    </div>
+    <div class="option-group">
+      <label>Range:</label>
+      <input type="range" id="rangeSlider" min="5" max="60" value="20" oninput="onRangeChange()">
+      <span id="rangeVal" style="color:var(--muted);font-size:0.75rem;">2.0</span>
+    </div>
+    <div class="option-group">
+      <label>Animate:</label>
+      <button class="btn-icon" id="btnPlay" onclick="toggleAnimation()">&#9654;</button>
+      <input type="range" id="tSlider" min="0" max="100" value="100" oninput="onTChange()" style="width:80px;">
+      <span id="tVal" style="color:var(--muted);font-size:0.75rem;">t=1.00</span>
+    </div>
+    <div class="option-group mobius-fields" id="mobiusFields">
+      <label>a:</label><input type="text" id="ma" value="1" title="real or a+bi">
+      <label>b:</label><input type="text" id="mb" value="0" title="real or a+bi">
+      <label>c:</label><input type="text" id="mc" value="0" title="real or a+bi">
+      <label>d:</label><input type="text" id="md" value="1" title="real or a+bi">
+      <button class="pill" onclick="updateMobius()" style="padding:4px 10px;">Apply</button>
+    </div>
+    <div class="option-group" id="blaschkeGroup" style="display:none;">
+      <label>|a|:</label>
+      <input type="range" id="blaschkeR" min="0" max="95" value="50" oninput="updateBlaschke()" style="width:70px;">
+      <label>arg:</label>
+      <input type="range" id="blaschkeTheta" min="0" max="360" value="0" oninput="updateBlaschke()" style="width:70px;">
+      <span id="blaschkeVal" style="color:var(--accent3);font-size:0.72rem;">a=0.50</span>
+    </div>
+  </div>
+</div>
+
+<div class="canvas-row">
+  <div class="canvas-card">
+    <div class="card-header">
+      <span>z-plane (input domain)</span>
+      <span class="fn">z</span>
+    </div>
+    <canvas id="zCanvas" width="800" height="800"></canvas>
+  </div>
+  <div class="canvas-card">
+    <div class="card-header">
+      <span>w-plane (image)</span>
+      <span class="fn" id="fnLabel">w = z&sup2;</span>
+    </div>
+    <canvas id="wCanvas" width="800" height="800"></canvas>
+  </div>
+</div>
+
+<div class="info-bar">
+  <div class="info-card" id="infoCard">
+    <strong>w = z&sup2;</strong> &mdash; The squaring map doubles angles and squares distances from the origin.
+    <span class="fp">Fixed points: z = 0, z = 1</span>
+  </div>
+</div>
+
+<script>
+// ============ Complex Arithmetic ============
+const C = {
+  re: z => z[0],
+  im: z => z[1],
+  make: (r, i) => [r, i || 0],
+  add: (a, b) => [a[0]+b[0], a[1]+b[1]],
+  sub: (a, b) => [a[0]-b[0], a[1]-b[1]],
+  mul: (a, b) => [a[0]*b[0]-a[1]*b[1], a[0]*b[1]+a[1]*b[0]],
+  div: (a, b) => {
+    const d = b[0]*b[0]+b[1]*b[1];
+    if (d < 1e-30) return [1e6, 1e6];
+    return [(a[0]*b[0]+a[1]*b[1])/d, (a[1]*b[0]-a[0]*b[1])/d];
+  },
+  conj: a => [a[0], -a[1]],
+  abs2: a => a[0]*a[0]+a[1]*a[1],
+  abs: a => Math.sqrt(a[0]*a[0]+a[1]*a[1]),
+  arg: a => Math.atan2(a[1], a[0]),
+  scale: (a, s) => [a[0]*s, a[1]*s],
+  exp: a => { const r = Math.exp(a[0]); return [r*Math.cos(a[1]), r*Math.sin(a[1])]; },
+  log: a => {
+    const r = Math.sqrt(a[0]*a[0]+a[1]*a[1]);
+    if (r < 1e-30) return [-20, 0];
+    return [Math.log(r), Math.atan2(a[1], a[0])];
+  },
+  sin: a => {
+    return [Math.sin(a[0])*Math.cosh(a[1]), Math.cos(a[0])*Math.sinh(a[1])];
+  },
+  cos: a => {
+    return [Math.cos(a[0])*Math.cosh(a[1]), -Math.sin(a[0])*Math.sinh(a[1])];
+  },
+  tan: a => C.div(C.sin(a), C.cos(a)),
+  sqrt: a => {
+    const r = Math.sqrt(Math.sqrt(a[0]*a[0]+a[1]*a[1]));
+    const theta = Math.atan2(a[1], a[0]) / 2;
+    return [r*Math.cos(theta), r*Math.sin(theta)];
+  },
+  pow: (a, n) => {
+    const r = Math.pow(Math.sqrt(a[0]*a[0]+a[1]*a[1]), n);
+    const theta = Math.atan2(a[1], a[0]) * n;
+    return [r*Math.cos(theta), r*Math.sin(theta)];
+  },
+  lerp: (a, b, t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t],
+};
+
+// ============ Parse complex number from string ============
+function parseComplex(s) {
+  s = s.trim().replace(/\s/g, '');
+  if (!s) return [0, 0];
+  // Try "a+bi" or "a-bi" patterns
+  const m = s.match(/^([+-]?[\d.]*)?([+-][\d.]*)?i$/);
+  if (m) {
+    const re = m[1] ? parseFloat(m[1]) : 0;
+    let im = m[2] || '';
+    if (im === '+' || im === '') im = 1;
+    else if (im === '-') im = -1;
+    else im = parseFloat(im);
+    return [re, im];
+  }
+  // Just "bi" or "i"
+  if (s === 'i') return [0, 1];
+  if (s === '-i') return [0, -1];
+  if (s.endsWith('i')) {
+    const v = parseFloat(s.slice(0, -1));
+    return [0, isNaN(v) ? 0 : v];
+  }
+  const v = parseFloat(s);
+  return [isNaN(v) ? 0 : v, 0];
+}
+
+// ============ Mappings ============
+let mobiusA = [1,0], mobiusB = [0,0], mobiusC = [0,0], mobiusD = [1,0];
+let blaschkeA = [0.5, 0];
+
+const mappings = [
+  {
+    id: 'z2', label: 'z\u00B2', htmlLabel: 'w = z\u00B2',
+    fn: z => C.mul(z, z),
+    desc: 'The squaring map doubles angles and squares distances from the origin.',
+    fixedPoints: 'z = 0, z = 1'
+  },
+  {
+    id: 'z3', label: 'z\u00B3', htmlLabel: 'w = z\u00B3',
+    fn: z => C.mul(C.mul(z, z), z),
+    desc: 'The cubing map triples angles and cubes moduli. Three-fold symmetry.',
+    fixedPoints: 'z = 0, z = 1, z = e^{2\u03C0i/3} (cube roots of unity minus those mapping elsewhere)'
+  },
+  {
+    id: 'inv', label: '1/z', htmlLabel: 'w = 1/z',
+    fn: z => C.div([1,0], z),
+    desc: 'Inversion maps the inside of the unit circle to the outside and vice versa. Circles and lines map to circles and lines.',
+    fixedPoints: 'z = 1, z = -1'
+  },
+  {
+    id: 'exp', label: 'e\u1dbb', htmlLabel: 'w = e<sup>z</sup>',
+    fn: z => C.exp(z),
+    desc: 'The exponential map sends horizontal lines to rays and vertical lines to circles. It maps the strip 0 < Im(z) < 2\u03C0 onto the punctured plane.',
+    fixedPoints: 'None (transcendental equation z = e^z has no elementary solution)'
+  },
+  {
+    id: 'log', label: 'log z', htmlLabel: 'w = log(z)',
+    fn: z => C.log(z),
+    desc: 'The complex logarithm is the inverse of the exponential. It maps circles to vertical lines and rays to horizontal lines. Multi-valued with branch cut along the negative real axis.',
+    fixedPoints: 'z \u2248 0.3181 + 1.3372i (numerical)'
+  },
+  {
+    id: 'sin', label: 'sin z', htmlLabel: 'w = sin(z)',
+    fn: z => C.sin(z),
+    desc: 'Complex sine maps the strip -\u03C0/2 < Re(z) < \u03C0/2 onto the complex plane minus two rays. Vertical lines map to hyperbolas, horizontal lines to ellipses.',
+    fixedPoints: 'z = 0'
+  },
+  {
+    id: 'cos', label: 'cos z', htmlLabel: 'w = cos(z)',
+    fn: z => C.cos(z),
+    desc: 'Complex cosine is similar to sine but shifted. Vertical lines map to hyperbolas, horizontal lines to ellipses.',
+    fixedPoints: 'z \u2248 0.7391 (Dottie number)'
+  },
+  {
+    id: 'blaschke', label: 'Blaschke', htmlLabel: 'w = (z\u2212a)/(1\u2212\u0101z)',
+    fn: z => C.div(C.sub(z, blaschkeA), C.sub([1,0], C.mul(C.conj(blaschkeA), z))),
+    desc: 'A Blaschke factor is an automorphism of the unit disc. It maps the unit disc to itself, preserving the boundary circle.',
+    fixedPoints: 'Depends on a'
+  },
+  {
+    id: 'joukowski', label: 'Joukowski', htmlLabel: 'w = z + 1/z',
+    fn: z => C.add(z, C.div([1,0], z)),
+    desc: 'The Joukowski map transforms circles near the unit circle into airfoil (wing) shapes. Fundamental in aerodynamics.',
+    fixedPoints: 'z = 1, z = -1 (critical points where derivative vanishes)'
+  },
+  {
+    id: 'mobius', label: 'M\u00F6bius', htmlLabel: 'w = (az+b)/(cz+d)',
+    fn: z => C.div(C.add(C.mul(mobiusA, z), mobiusB), C.add(C.mul(mobiusC, z), mobiusD)),
+    desc: 'General M\u00F6bius transformation. Maps circles and lines to circles and lines. Set a,b,c,d below.',
+    fixedPoints: 'Depends on a, b, c, d'
+  },
+  {
+    id: 'tan', label: 'tan z', htmlLabel: 'w = tan(z)',
+    fn: z => C.tan(z),
+    desc: 'Complex tangent has poles at z = (n+\u00BD)\u03C0. It maps vertical strips to the complex plane.',
+    fixedPoints: 'z = 0'
+  },
+  {
+    id: 'sqrt', label: '\u221Az', htmlLabel: 'w = \u221Az',
+    fn: z => C.sqrt(z),
+    desc: 'The principal square root halves the argument and takes the square root of the modulus. Branch cut along the negative real axis.',
+    fixedPoints: 'z = 0, z = 1'
+  },
+];
+
+// ============ State ============
+let currentMapping = 0;
+let viewMode = 'grid'; // 'grid' or 'domain'
+let gridDensity = 15;
+let viewRange = 2.0;
+let animT = 1.0;
+let animating = false;
+let animDir = 1;
+let animRAF = null;
+
+const zCanvas = document.getElementById('zCanvas');
+const wCanvas = document.getElementById('wCanvas');
+const zCtx = zCanvas.getContext('2d');
+const wCtx = wCanvas.getContext('2d');
+
+// ============ Init pills ============
+const pillContainer = document.getElementById('mappingPills');
+mappings.forEach((m, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'pill' + (i === 0 ? ' active' : '');
+  btn.textContent = m.label;
+  btn.onclick = () => selectMapping(i);
+  btn.dataset.idx = i;
+  pillContainer.appendChild(btn);
+});
+
+// ============ UI handlers ============
+function selectMapping(idx) {
+  currentMapping = idx;
+  document.querySelectorAll('#mappingPills .pill').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+  document.getElementById('fnLabel').innerHTML = mappings[idx].htmlLabel;
+  document.getElementById('mobiusFields').classList.toggle('show', mappings[idx].id === 'mobius');
+  document.getElementById('blaschkeGroup').style.display = mappings[idx].id === 'blaschke' ? 'flex' : 'none';
+  updateInfo();
+  render();
+}
+
+function setViewMode(mode) {
+  viewMode = mode;
+  document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+  document.getElementById('btnDomain').classList.toggle('active', mode === 'domain');
+  render();
+}
+
+function onDensityChange() {
+  gridDensity = parseInt(document.getElementById('densitySlider').value);
+  render();
+}
+
+function onRangeChange() {
+  viewRange = parseInt(document.getElementById('rangeSlider').value) / 10;
+  document.getElementById('rangeVal').textContent = viewRange.toFixed(1);
+  render();
+}
+
+function onTChange() {
+  animT = parseInt(document.getElementById('tSlider').value) / 100;
+  document.getElementById('tVal').textContent = 't=' + animT.toFixed(2);
+  render();
+}
+
+function toggleAnimation() {
+  animating = !animating;
+  document.getElementById('btnPlay').classList.toggle('active', animating);
+  document.getElementById('btnPlay').innerHTML = animating ? '&#9646;&#9646;' : '&#9654;';
+  if (animating) {
+    animDir = 1;
+    animT = 0;
+    animLoop();
+  } else {
+    if (animRAF) cancelAnimationFrame(animRAF);
+  }
+}
+
+function animLoop() {
+  if (!animating) return;
+  animT += animDir * 0.008;
+  if (animT >= 1) { animT = 1; animDir = -1; }
+  if (animT <= 0) { animT = 0; animDir = 1; }
+  document.getElementById('tSlider').value = Math.round(animT * 100);
+  document.getElementById('tVal').textContent = 't=' + animT.toFixed(2);
+  render();
+  animRAF = requestAnimationFrame(animLoop);
+}
+
+function updateMobius() {
+  mobiusA = parseComplex(document.getElementById('ma').value);
+  mobiusB = parseComplex(document.getElementById('mb').value);
+  mobiusC = parseComplex(document.getElementById('mc').value);
+  mobiusD = parseComplex(document.getElementById('md').value);
+  render();
+}
+
+function updateBlaschke() {
+  const r = parseInt(document.getElementById('blaschkeR').value) / 100;
+  const theta = parseInt(document.getElementById('blaschkeTheta').value) * Math.PI / 180;
+  blaschkeA = [r * Math.cos(theta), r * Math.sin(theta)];
+  document.getElementById('blaschkeVal').textContent =
+    'a=' + blaschkeA[0].toFixed(2) + (blaschkeA[1] >= 0 ? '+' : '') + blaschkeA[1].toFixed(2) + 'i';
+  render();
+}
+
+function updateInfo() {
+  const m = mappings[currentMapping];
+  document.getElementById('infoCard').innerHTML =
+    '<strong>' + m.htmlLabel + '</strong> &mdash; ' + m.desc +
+    ' <span class="fp">Fixed points: ' + m.fixedPoints + '</span>';
+}
+
+// ============ Coordinate transforms ============
+function worldToScreen(z, canvas, range) {
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const scale = w / (2 * range);
+  return [cx + z[0] * scale, cy - z[1] * scale];
+}
+
+// ============ Mapped function with animation interpolation ============
+function mapZ(z) {
+  const fz = mappings[currentMapping].fn(z);
+  if (animT >= 0.999) return fz;
+  return C.lerp(z, fz, animT);
+}
+
+// ============ HSL to RGB for domain colouring ============
+function hslToRgb(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if (h < 60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+  return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+}
+
+// ============ Domain colouring ============
+function domainColor(z) {
+  const arg = C.arg(z);
+  const mod = C.abs(z);
+  const hue = (arg / Math.PI) * 180 + 180;
+  // Lightness encodes modulus with banding
+  const logMod = Math.log2(mod + 0.001);
+  const frac = logMod - Math.floor(logMod);
+  const lightness = 35 + 30 * frac;
+  return hslToRgb(hue, 80, lightness);
+}
+
+// ============ Rendering ============
+function drawAxes(ctx, canvas, range, color) {
+  const [ox, oy] = worldToScreen([0, 0], canvas, range);
+  ctx.strokeStyle = color || 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, oy); ctx.lineTo(canvas.width, oy);
+  ctx.moveTo(ox, 0); ctx.lineTo(ox, canvas.height);
+  ctx.stroke();
+}
+
+function drawGridOnCanvas(ctx, canvas, range, mapFn, density) {
+  const n = density;
+  const step = (2 * range) / n;
+  const pts = 300; // points per line
+
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // Horizontal lines (varying y, constant y per line)
+  for (let i = 0; i <= n; i++) {
+    const y = -range + i * step;
+    const hue = 200 + (i / n) * 60; // blue family
+    ctx.strokeStyle = `hsla(${hue}, 70%, 60%, 0.7)`;
+    ctx.beginPath();
+    let started = false;
+    for (let j = 0; j <= pts; j++) {
+      const x = -range + (2 * range * j) / pts;
+      const z = [x, y];
+      const w = mapFn(z);
+      if (!isFinite(w[0]) || !isFinite(w[1]) || C.abs(w) > range * 10) {
+        started = false;
+        continue;
+      }
+      const [sx, sy] = worldToScreen(w, canvas, range);
+      if (!started) { ctx.moveTo(sx, sy); started = true; }
+      else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
+  }
+
+  // Vertical lines (varying x, constant x per line)
+  for (let i = 0; i <= n; i++) {
+    const x = -range + i * step;
+    const hue = 330 + (i / n) * 40; // pink/red family
+    ctx.strokeStyle = `hsla(${hue}, 70%, 60%, 0.7)`;
+    ctx.beginPath();
+    let started = false;
+    for (let j = 0; j <= pts; j++) {
+      const y = -range + (2 * range * j) / pts;
+      const z = [x, y];
+      const w = mapFn(z);
+      if (!isFinite(w[0]) || !isFinite(w[1]) || C.abs(w) > range * 10) {
+        started = false;
+        continue;
+      }
+      const [sx, sy] = worldToScreen(w, canvas, range);
+      if (!started) { ctx.moveTo(sx, sy); started = true; }
+      else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawUnitCircle(ctx, canvas, range, mapFn, color, lw) {
+  const pts = 500;
+  ctx.strokeStyle = color || 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = lw || 2.5;
+  ctx.beginPath();
+  let started = false;
+  for (let i = 0; i <= pts; i++) {
+    const theta = (2 * Math.PI * i) / pts;
+    const z = [Math.cos(theta), Math.sin(theta)];
+    const w = mapFn(z);
+    if (!isFinite(w[0]) || !isFinite(w[1]) || C.abs(w) > range * 10) {
+      started = false;
+      continue;
+    }
+    const [sx, sy] = worldToScreen(w, canvas, range);
+    if (!started) { ctx.moveTo(sx, sy); started = true; }
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.stroke();
+}
+
+function drawDomainColoring(ctx, canvas, range, mapFn) {
+  const w = canvas.width, h = canvas.height;
+  const imageData = ctx.createImageData(w, h);
+  const data = imageData.data;
+  // Sample every 2 pixels for speed, then fill
+  const step = 2;
+  for (let py = 0; py < h; py += step) {
+    for (let px = 0; px < w; px += step) {
+      const x = (px - w / 2) / (w / (2 * range));
+      const y = (h / 2 - py) / (h / (2 * range));
+      const z = [x, y];
+      const fz = mapFn(z);
+      const [r, g, b] = domainColor(fz);
+      // Fill step x step block
+      for (let dy = 0; dy < step && py + dy < h; dy++) {
+        for (let dx = 0; dx < step && px + dx < w; dx++) {
+          const idx = ((py + dy) * w + (px + dx)) * 4;
+          data[idx] = r;
+          data[idx + 1] = g;
+          data[idx + 2] = b;
+          data[idx + 3] = 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function drawFixedPointMarker(ctx, canvas, range, z) {
+  if (!isFinite(z[0]) || !isFinite(z[1])) return;
+  const [sx, sy] = worldToScreen(z, canvas, range);
+  if (sx < 0 || sx > canvas.width || sy < 0 || sy > canvas.height) return;
+  ctx.beginPath();
+  ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(108, 255, 200, 0.9)';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function render() {
+  const W = zCanvas.width, H = zCanvas.height;
+  const r = viewRange;
+
+  // Clear
+  zCtx.fillStyle = '#0a0a10';
+  zCtx.fillRect(0, 0, W, H);
+  wCtx.fillStyle = '#0a0a10';
+  wCtx.fillRect(0, 0, W, H);
+
+  const identity = z => z;
+
+  if (viewMode === 'grid') {
+    // z-plane: draw grid + unit circle (identity map)
+    drawAxes(zCtx, zCanvas, r);
+    drawGridOnCanvas(zCtx, zCanvas, r, identity, gridDensity);
+    drawUnitCircle(zCtx, zCanvas, r, identity, 'rgba(255, 255, 255, 0.85)', 2.5);
+
+    // w-plane: draw mapped grid + mapped unit circle
+    drawAxes(wCtx, wCanvas, r);
+    drawGridOnCanvas(wCtx, wCanvas, r, mapZ, gridDensity);
+    drawUnitCircle(wCtx, wCanvas, r, mapZ, 'rgba(108, 255, 200, 0.9)', 2.5);
+
+    // Draw fixed points on w-plane
+    drawKnownFixedPoints(wCtx, wCanvas, r);
+
+    // Draw Blaschke 'a' marker on z-plane if applicable
+    if (mappings[currentMapping].id === 'blaschke') {
+      drawFixedPointMarker(zCtx, zCanvas, r, blaschkeA);
+    }
+  } else {
+    // Domain colouring mode
+    drawDomainColoring(zCtx, zCanvas, r, identity);
+    drawDomainColoring(wCtx, wCanvas, r, mapZ);
+    // Overlay unit circle on both
+    drawUnitCircle(zCtx, zCanvas, r, identity, 'rgba(255,255,255,0.5)', 1.5);
+    drawUnitCircle(wCtx, wCanvas, r, mapZ, 'rgba(255,255,255,0.5)', 1.5);
+  }
+
+  // Tick marks on axes
+  drawTicks(zCtx, zCanvas, r);
+  drawTicks(wCtx, wCanvas, r);
+}
+
+function drawTicks(ctx, canvas, range) {
+  const [ox, oy] = worldToScreen([0, 0], canvas, range);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center';
+  const step = range <= 2 ? 1 : range <= 5 ? 1 : Math.ceil(range / 5);
+  for (let v = -Math.floor(range); v <= Math.floor(range); v += step) {
+    if (v === 0) continue;
+    const [sx] = worldToScreen([v, 0], canvas, range);
+    ctx.fillText(v, sx, oy + 14);
+    const [, sy] = worldToScreen([0, v], canvas, range);
+    ctx.fillText(v, ox - 14, sy + 4);
+  }
+}
+
+function drawKnownFixedPoints(ctx, canvas, range) {
+  const m = mappings[currentMapping];
+  // Only mark obvious fixed points
+  const candidates = [];
+  if (m.id === 'z2') candidates.push([0,0], [1,0]);
+  if (m.id === 'z3') candidates.push([0,0], [1,0]);
+  if (m.id === 'inv') candidates.push([1,0], [-1,0]);
+  if (m.id === 'sin' || m.id === 'tan') candidates.push([0,0]);
+  if (m.id === 'sqrt') candidates.push([0,0], [1,0]);
+  if (m.id === 'joukowski') candidates.push([1,0], [-1,0]);
+  candidates.forEach(z => drawFixedPointMarker(ctx, canvas, range, z));
+}
+
+// ============ Canvas resize ============
+function resizeCanvases() {
+  const cards = document.querySelectorAll('.canvas-card');
+  cards.forEach(card => {
+    const canvas = card.querySelector('canvas');
+    const rect = card.getBoundingClientRect();
+    const headerH = card.querySelector('.card-header').getBoundingClientRect().height;
+    const size = Math.min(rect.width, 680);
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+  });
+  render();
+}
+
+window.addEventListener('resize', resizeCanvases);
+
+// ============ Mouse interaction for Blaschke factor ============
+zCanvas.addEventListener('mousedown', onCanvasMouseDown);
+zCanvas.addEventListener('mousemove', onCanvasMouseMove);
+zCanvas.addEventListener('mouseup', () => { draggingBlaschke = false; });
+let draggingBlaschke = false;
+
+function onCanvasMouseDown(e) {
+  if (mappings[currentMapping].id !== 'blaschke') return;
+  draggingBlaschke = true;
+  setBlaschkeFromMouse(e);
+}
+
+function onCanvasMouseMove(e) {
+  if (!draggingBlaschke) return;
+  setBlaschkeFromMouse(e);
+}
+
+function setBlaschkeFromMouse(e) {
+  const rect = zCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const px = (e.clientX - rect.left) * dpr;
+  const py = (e.clientY - rect.top) * dpr;
+  const x = (px - zCanvas.width / 2) / (zCanvas.width / (2 * viewRange));
+  const y = (zCanvas.height / 2 - py) / (zCanvas.height / (2 * viewRange));
+  let r = Math.sqrt(x * x + y * y);
+  if (r >= 1) r = 0.95;
+  const theta = Math.atan2(y, x);
+  blaschkeA = [r * Math.cos(theta), r * Math.sin(theta)];
+  // Update sliders
+  document.getElementById('blaschkeR').value = Math.round(r * 100);
+  document.getElementById('blaschkeTheta').value = Math.round(((theta * 180 / Math.PI) + 360) % 360);
+  document.getElementById('blaschkeVal').textContent =
+    'a=' + blaschkeA[0].toFixed(2) + (blaschkeA[1] >= 0 ? '+' : '') + blaschkeA[1].toFixed(2) + 'i';
+  render();
+}
+
+// ============ Boot ============
+updateInfo();
+setTimeout(resizeCanvases, 50);
+</script>
+</body>
+</html>
